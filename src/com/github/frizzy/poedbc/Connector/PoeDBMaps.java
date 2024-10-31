@@ -7,7 +7,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,12 +50,12 @@ public class PoeDBMaps {
      * The name of the map an instance of PoeDBMaps will retrieve
      * data for.
      */
-    private final String mapName;
+    private String mapName;
 
     /**
      *
      */
-    private final String mapUrl;
+    private String mapUrl;
 
     /**
      * The Document the map data is retrieved from.
@@ -69,7 +68,7 @@ public class PoeDBMaps {
      */
     public PoeDBMaps ( final String mapName ) {
         this.mapName = mapName;
-        this.mapUrl = buildUrl ( );
+        this.mapUrl = getURL ( );
     }
 
     /**
@@ -77,10 +76,24 @@ public class PoeDBMaps {
      * This is temporary.
      * TODO: Pull the URL from a static constant map based off of the map name provided.
      */
-    private String buildUrl ( ) {
-        final String linkMapName = mapName.replace ( " " , "_" ) + "_Map#";
-        final String linkMapName2 = mapName.replace ( " " , "" ) + "MapMapWorlds" + mapName.replace ( " " , "" );
-        return POEDB_URL + linkMapName + linkMapName2;
+    private String getURL ( ) {
+        return URLResourceHandler.getInstance ( ).getMapLinkFor ( mapName);
+    }
+
+    /**
+     * <p>
+     * Attempts to parse the poe.db web page for the provided mapName. All data retrievable
+     * by the instance of PoeDBMaps will be in relation to the new mapName.
+     * </p>
+     * <p>
+     * This allows you to reuse PoeDBMaps instances.
+     * </p>
+     */
+    public boolean parseNew ( final String mapName ) {
+        this.mapName = mapName;
+        this.mapUrl = getMapUrl ();
+
+        return parse ();
     }
 
     /**
@@ -91,13 +104,21 @@ public class PoeDBMaps {
      * Subsequent calls to the various PoeDBMaps methods will retrieve the data from
      * the parsed document.
      * </p>
+     * @return Returns true if the web page for the map was successfully parsed, false otherwise.
      */
-    public void parse ( ) {
-        try {
-            doc = Jsoup.connect ( mapUrl ).get ( );
-        } catch ( IOException e ) {
-            log.log ( Level.SEVERE, "JSoup parsing failed.", e );
+    public boolean parse ( ) {
+        if ( !mapUrl.equals ( "Unavailable" ) ) {
+            try {
+                doc = Jsoup.connect ( mapUrl ).get ( );
+                return true;
+            } catch ( IOException e ) {
+                log.log ( Level.SEVERE, "JSoup parsing failed.", e );
+            }
+        } else {
+            log.warning ( "URL provided was Unavailable. No link to process a document from." );
         }
+
+        return false;
     }
 
     /**
@@ -151,6 +172,22 @@ public class PoeDBMaps {
      */
     public final int getBossDifficulty ( ) {
         return getIntegerValue ( "Boss Difficulty" );
+    }
+
+    /**
+     *
+     * @return
+     */
+    public final String getMapName ( ) {
+        return mapName;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public final String getMapUrl ( ) {
+        return mapUrl;
     }
 
     /**
@@ -272,6 +309,20 @@ public class PoeDBMaps {
     }
 
     /**
+     * Returns the hideout.
+     */
+    public final String getHideout ( ) {
+        return getStringValue ( "Hideout" );
+    }
+
+    /**
+     * Returns the market link.
+     */
+    public final String getMarket ( ) {
+        return getHrefValue ( "Market" );
+    }
+
+    /**
      * @return
      */
     public Collection < String > getPantheon ( ) {
@@ -325,25 +376,15 @@ public class PoeDBMaps {
      */
     public final Collection < BossStats > getBossesStats ( ) {
         final Collection < BossStats > bossStats = new ArrayList <> ( );
+        Elements tables = doc.select ( "table" );
 
-        try {
-            /*
-             * From my testing, I have determined the html of the poedb map pages have two <table> tags and the
-             * second one contains the information needed for this method. We can assume the second table is the 2nd
-             * index.
-             */
-            Element tableEles = doc.select ( "table" ).get ( 1 ); //Second table is needed
-
-            /*
-             * Here we retrieve all <tbody> elements.
-             */
-            Elements tbodyEles = tableEles.select ( "tbody" );
-
-            /*
-             * Iterate over all <tbody> elements to get the <tr> tags.
-             */
-            for ( Element ele : tbodyEles ) {
-                Elements trEles = ele.select ( "tr" );
+        for ( Element table : tables ) {
+            try {
+                /*
+                 * Here we retrieve all <tbody> elements.
+                 */
+                Element tbody = table.select ( "tbody" ).get ( 0 );
+                Elements trEles = tbody.select ( "tr" );
 
                 /*
                  * Every <tr> element should contain the different boss stats/information.
@@ -351,48 +392,61 @@ public class PoeDBMaps {
                 for ( Element trEle : trEles ) {
                     Elements tdEles = trEle.select ( "td" );
 
-                    /*
-                     * Now that we are iterating the elements within the <tr> element, we can retrieve
-                     * the information we need.
-                     */
-                    internalLoop:
-                    //Labeled internal loop because we want to break this loop specifically once we have parsed the boss stats.
-                    {
-                        for ( int i = 0; i < tdEles.size ( ); i++ ) {
-                            Element tdEle = tdEles.get ( i );
+                    if ( tdEles.size () == 13 ) { //13 values are available at the bottom table regarding boss/enemy stats
 
-                            String toStr = tdEle.toString ( );
-                            if ( toStr.contains ( "MonsterVarieties" ) ) {
+                        /*
+                         * Now that we are iterating the elements within the <tr> element, we can retrieve
+                         * the information we need.
+                         */
+                        internalLoop:
+                        //Labeled internal loop because we want to break this loop specifically once we have parsed the boss stats.
+                        {
+                            for ( int i = 0; i < tdEles.size ( ); i++ ) {
+                                Element tdEle = tdEles.get ( i );
 
-                                /*
-                                 * TODO: At some point I need to remove the replaceAll calls and try something else for
-                                 * better performance.
-                                 */
-                                bossStats.add ( new BossStats (
-                                        Integer.parseInt ( tdEles.get ( i - 1 ).text ( ) ) ,
-                                        tdEles.get ( i ).text ( ) ,
-                                        Integer.parseInt ( tdEles.get ( i + 1 ).text ( ).replaceAll ( "-?[^\\d]" , "" ) ) ,
-                                        Integer.parseInt ( tdEles.get ( i + 2 ).text ( ).replaceAll ( "-?[^\\d]" , "" ) ) ,
-                                        Double.parseDouble ( tdEles.get ( i + 3 ).text ( ) ) ,
-                                        Integer.parseInt ( tdEles.get ( i + 4 ).text ( ).replaceAll ( "-?[^\\d]" , "" ) ) ,
-                                        Integer.parseInt ( tdEles.get ( i + 5 ).text ( ).replaceAll ( "-?[^\\d]" , "" ) ) ,
-                                        Integer.parseInt ( tdEles.get ( i + 6 ).text ( ).replaceAll ( "-?[^\\d]" , "" ) ) ,
-                                        Integer.parseInt ( tdEles.get ( i + 7 ).text ( ).replaceAll ( "-?[^\\d]" , "" ) ) ,
-                                        Integer.parseInt ( tdEles.get ( i + 8 ).text ( ) ) ,
-                                        Integer.parseInt ( tdEles.get ( i + 9 ).text ( ) ) ,
-                                        Integer.parseInt ( tdEles.get ( i + 10 ).text ( ) ) ,
-                                        Integer.parseInt ( tdEles.get ( i + 11 ).text ( ) ) ) );
-                                break internalLoop;
+                                String toStr = tdEle.toString ( );
+                                if ( toStr.contains ( "MonsterVarieties" ) ) {
+
+                                    /*
+                                     * TODO: At some point I need to remove the replaceAll calls and try something else for
+                                     * better performance.
+                                     */
+                                    bossStats.add ( new BossStats (
+                                            Integer.parseInt ( tdEles.get ( i - 1 ).text ( ) ) ,
+                                            tdEles.get ( i ).text ( ) ,
+                                            Integer.parseInt ( tdEles.get ( i + 1 ).text ( ).replaceAll ( "-?[^\\d]" , "" ) ) ,
+                                            Integer.parseInt ( tdEles.get ( i + 2 ).text ( ).replaceAll ( "-?[^\\d]" , "" ) ) ,
+                                            Double.parseDouble ( tdEles.get ( i + 3 ).text ( ) ) ,
+                                            Integer.parseInt ( tdEles.get ( i + 4 ).text ( ).replaceAll ( "-?[^\\d]" , "" ) ) ,
+                                            Integer.parseInt ( tdEles.get ( i + 5 ).text ( ).replaceAll ( "-?[^\\d]" , "" ) ) ,
+                                            Integer.parseInt ( tdEles.get ( i + 6 ).text ( ).replaceAll ( "-?[^\\d]" , "" ) ) ,
+                                            Integer.parseInt ( tdEles.get ( i + 7 ).text ( ).replaceAll ( "-?[^\\d]" , "" ) ) ,
+                                            Integer.parseInt ( tdEles.get ( i + 8 ).text ( ) ) ,
+                                            Integer.parseInt ( tdEles.get ( i + 9 ).text ( ) ) ,
+                                            Integer.parseInt ( tdEles.get ( i + 10 ).text ( ) ) ,
+                                            Integer.parseInt ( tdEles.get ( i + 11 ).text ( ) ) ) );
+                                    break internalLoop;
+                                }
                             }
                         }
                     }
                 }
+            } catch ( IndexOutOfBoundsException e ) {
+                log.log ( Level.SEVERE , "An exception occurred retrieving boss stats." , e );
             }
-        } catch ( IndexOutOfBoundsException e ) {
-            log.log ( Level.SEVERE , "An exception occurred retrieving boss stats." , e );
         }
 
+
+
         return bossStats;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public String getMods ( ) {
+        return getStringValue ( "Mods" );
     }
 
     /**
@@ -429,6 +483,8 @@ public class PoeDBMaps {
      * </p>
      */
     private String getHrefValue ( String title ) {
+        if ( doc == null )
+            return "null";
         Elements trEles = doc.select ( "tr" );
 
         try {
@@ -456,6 +512,9 @@ public class PoeDBMaps {
      *
      */
     private String getStringValue ( String title ) {
+        if ( doc == null )
+            return "Null";
+
         Elements trEles = doc.select ( "tr" );
 
         try {
@@ -479,6 +538,9 @@ public class PoeDBMaps {
     }
 
     private int getIntegerValue ( String title ) {
+        if ( doc == null)
+            return -1;
+
         Elements tdEles = doc.select ( "tr" );
 
         try {

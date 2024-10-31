@@ -4,6 +4,7 @@ import com.github.frizzy.poedbc.Connector.PoeDBMaps;
 import com.github.frizzy.poedbc.Connector.URLResourceHandler;
 import com.github.frizzy.poedbc.Data.BossStats;
 
+import javax.swing.JOptionPane;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
@@ -14,16 +15,26 @@ public class Test {
     }
 
     public static void main ( String[] args ) {
-        URLResourceHandler handler = URLResourceHandler.getInstance ();
-        String link = handler.getMapLinkFor ( "Gardens" );
-        System.out.println ( link );
+       String input = JOptionPane.showInputDialog ( "Enter in the map you want to retrieve" );
+
+       if ( input != null && ( !input.isEmpty () || !input.isBlank () ) ) {
+           testAllValues ( input );
+       } else {
+           System.out.println ( "Map name is null, empty, or blank. Exiting.");
+       }
     }
 
-    private static void testAllValues ( ) {
+    /**
+     *
+     */
+    private static void testAllValues ( String map ) {
         long startTime = System.currentTimeMillis ();
 
-        PoeDBMaps maps = new PoeDBMaps ( "Sepulchre" );
+        PoeDBMaps maps = new PoeDBMaps ( map );
         maps.parse ( );
+
+        String mapName = maps.getMapName ();
+        String mapUrl = maps.getMapUrl ();
 
         int dropLevel = maps.getDropLevel ( );
         int monsterLevel = maps.getMonsterLevel ();
@@ -46,6 +57,8 @@ public class Test {
         String outdoors = maps.getOutdoors ();
         String linear = maps.getLinear ();
         String loading = maps.getLoading ();
+        String hideout = maps.getHideout ();
+        String mods = maps.getMods ();
         Collection < String > flags = maps.getFlags ( );
         Collection < String > tags = maps.getTags ();
         Collection < String > cardTags = maps.getCardTags ( );
@@ -59,7 +72,10 @@ public class Test {
 
         long stopTime = System.currentTimeMillis ();
         System.out.println ( "Time taken: " + ( stopTime - startTime )  + " milliseconds." );
-
+        System.out.println ( "----------------------" );
+        System.out.println ( "Map name: " + mapName );
+        System.out.println ( "Map URL: " + mapUrl );
+        System.out.println ( "----------------------" );
         System.out.println ( "DropLevel: " + dropLevel );
         System.out.println ( "Monster Level: " + monsterLevel );
         System.out.println ( "Act: " + act );
@@ -81,6 +97,7 @@ public class Test {
         System.out.println ( "Outdoors: " + outdoors );
         System.out.println ( "Linear: " + linear );
         System.out.println ( "Loading: " + loading );
+        System.out.println ( "Hideout: " + hideout );
         System.out.println ( "Flags: " + flags );
         System.out.println ( "Tags: " + tags );
         System.out.println ( "Card Tags: " + cardTags );
@@ -91,5 +108,7 @@ public class Test {
         System.out.println ( "Upgraded From Maps: " + upgradedFromMaps );
         System.out.println ( "Topologies: " + topologies );
         System.out.println ( "Boss Stats: " + bossStats );
+        System.out.println ( "Mods: " + mods );
+        System.out.println ( "----------------------" );
     }
 }
