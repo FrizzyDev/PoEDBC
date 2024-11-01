@@ -29,6 +29,11 @@ public class URLResourceHandler {
     /**
      *
      */
+    private static final String POEDB_URL = "https://poedb.tw/us/";
+
+    /**
+     *
+     */
     private File mapsLinksFile;
 
     /**
@@ -57,6 +62,14 @@ public class URLResourceHandler {
     /**
      *
      */
+    public String getCurrencyLinkFor ( String currencyName ) {
+        String normalized = normalizeName ( currencyName );
+        return POEDB_URL + normalized;
+    }
+
+    /**
+     *
+     */
     public String getMapLinkFor ( String mapName ) {
         if ( mapsLinksFile != null ) {
             String lower = mapName.toLowerCase ();
@@ -79,6 +92,17 @@ public class URLResourceHandler {
     }
 
     /**
+     * Returns a poe.db link based off of the name of the unique item returned. Note:
+     * This does not necessarily mean the returned URL is valid. Verification steps should be
+     * taken to ensure your users are not entering incorrect names.
+     */
+    public String getUniqueLinkFor ( String uniqueName ) {
+        String normalized = normalizeName ( uniqueName );
+
+        return POEDB_URL + normalized;
+    }
+
+    /**
      * Removes any special characters contained in the mapName and the word "map",
      * then converts it to lower case.
      */
@@ -90,5 +114,14 @@ public class URLResourceHandler {
         }
 
         return lower;
+    }
+
+    /**
+     * Removes apostrophes and replaces spaces with underscores to help build a valid link.
+     */
+    private String normalizeName ( final String uniqueName ) {
+        String removedApost = uniqueName.replaceAll ( "'", "" );
+
+        return removedApost.replaceAll ( " ", "_" );
     }
 }

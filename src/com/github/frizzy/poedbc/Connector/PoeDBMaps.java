@@ -42,11 +42,6 @@ public class PoeDBMaps {
     private static final String UNAVAILABLE = "Unavailable";
 
     /**
-     * The base poe.db url.
-     */
-    private static final String POEDB_URL = "https://poedb.tw/us/";
-
-    /**
      * The name of the map an instance of PoeDBMaps will retrieve
      * data for.
      */
