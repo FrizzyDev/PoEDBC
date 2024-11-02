@@ -27,12 +27,12 @@ public class URLResourceHandler {
     private static URLResourceHandler handler;
 
     /**
-     *
+     * The base poe.db URL.
      */
     private static final String POEDB_URL = "https://poedb.tw/us/";
 
     /**
-     *
+     * The file containing URLs to map data on poe.db.
      */
     private File mapsLinksFile;
 
@@ -48,8 +48,7 @@ public class URLResourceHandler {
     }
 
     /**
-     *
-     * @return
+     * Returns the singleton instance of URLResourceHandler.
      */
     public static URLResourceHandler getInstance ( ) {
         if ( handler == null ) {
@@ -60,7 +59,14 @@ public class URLResourceHandler {
     }
 
     /**
-     *
+     * <p>
+     * Attempts to normalize the currency name into a valid link structure.
+     * </p>
+     * <p>
+     * It is not promised the returned link will be valid. You should add
+     * additional validation on your end before attempting to parse the page
+     * with JSoup.
+     * </p>
      */
     public String getCurrencyLinkFor ( String currencyName ) {
         String normalized = normalizeName ( currencyName );
@@ -68,7 +74,13 @@ public class URLResourceHandler {
     }
 
     /**
-     *
+     * <p>
+     * Retrieves a url for a map from the maps.links file.
+     * </p>
+     * <p>
+     * If the provided map name did not match one in the links file, "Unavailable"
+     * will return.
+     * </p>
      */
     public String getMapLinkFor ( String mapName ) {
         if ( mapsLinksFile != null ) {
@@ -92,9 +104,12 @@ public class URLResourceHandler {
     }
 
     /**
+     * <p>
      * Returns a poe.db link based off of the name of the unique item returned. Note:
      * This does not necessarily mean the returned URL is valid. Verification steps should be
-     * taken to ensure your users are not entering incorrect names.
+     * taken to ensure your users are not entering incorrect names or the returned link is
+     * valid.
+     * </p>
      */
     public String getUniqueLinkFor ( String uniqueName ) {
         String normalized = normalizeName ( uniqueName );
@@ -103,25 +118,13 @@ public class URLResourceHandler {
     }
 
     /**
-     * Removes any special characters contained in the mapName and the word "map",
-     * then converts it to lower case.
-     */
-    private String normalizeMapName ( final String mapName ) {
-        String lower = mapName.replaceAll ( "[^\\w\\s]","" ).toLowerCase ();
-
-        if ( lower.contains ( "map" ) ) {
-            lower = lower.replace ( "map", "" );
-        }
-
-        return lower;
-    }
-
-    /**
+     * <p>
      * Removes apostrophes and replaces spaces with underscores to help build a valid link.
+     * </p>
      */
     private String normalizeName ( final String uniqueName ) {
-        String removedApost = uniqueName.replaceAll ( "'", "" );
+        String removedApost = uniqueName.replace ( "'", "" );
 
-        return removedApost.replaceAll ( " ", "_" );
+        return removedApost.replace ( " ", "_" );
     }
 }

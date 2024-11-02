@@ -1,17 +1,16 @@
 package com.github.frizzy.poedbc.Connector;
 
 import com.github.frizzy.poedbc.Data.BossStats;
+import com.github.frizzy.poedbc.Utilities.DocFinder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,25 +36,20 @@ public class PoeDBMaps {
     private static final String UNKNOWN = "Unknown";
 
     /**
-     * Returned when certain data is unavailable.
-     */
-    private static final String UNAVAILABLE = "Unavailable";
-
-    /**
      * The name of the map an instance of PoeDBMaps will retrieve
      * data for.
      */
     private String mapName;
 
     /**
-     *
+     * The URL of the parsed map.
      */
     private String mapUrl;
 
     /**
      * The Document the map data is retrieved from.
      */
-    private Document doc;
+    private Document soupDoc;
 
     /**
      * Constructs a PoeDBMaps instance to parse the poe.db
@@ -67,9 +61,7 @@ public class PoeDBMaps {
     }
 
     /**
-     * Builds the URL.
-     * This is temporary.
-     * TODO: Pull the URL from a static constant map based off of the map name provided.
+     * Retrieves the map URL from the URLResourceHandler.
      */
     private String getURL ( ) {
         return URLResourceHandler.getInstance ( ).getMapLinkFor ( mapName);
@@ -99,12 +91,15 @@ public class PoeDBMaps {
      * Subsequent calls to the various PoeDBMaps methods will retrieve the data from
      * the parsed document.
      * </p>
-     * @return Returns true if the web page for the map was successfully parsed, false otherwise.
+     * <p>
+     * If false returns, that mean an error occurred during parsing and that the document is not
+     * available to retrieve data from.
+     * </p>
      */
     public boolean parse ( ) {
         if ( !mapUrl.equals ( "Unavailable" ) ) {
             try {
-                doc = Jsoup.connect ( mapUrl ).get ( );
+                soupDoc = Jsoup.connect ( mapUrl ).get ( );
                 return true;
             } catch ( IOException e ) {
                 log.log ( Level.SEVERE, "JSoup parsing failed.", e );
@@ -117,72 +112,59 @@ public class PoeDBMaps {
     }
 
     /**
-     * <p>
-     * Retrieves the item image from the poe.db webpage.
-     * </p>
-     * <p>If this fails, null is returned.</p>
-     */
-    public final BufferedImage getItemImage ( ) {
-
-        return null;
-    }
-
-    /**
-     * Retrieves the drop level of the map name passed to PoeDBMaps.
-     */
-    public final int getDropLevel ( ) {
-        return getIntegerValue ( "DropLevel" );
-    }
-
-    /**
-     * Returns the monster level of the map.
-     */
-    public final int getMonsterLevel ( ) {
-        return getIntegerValue ( "Monster Level" );
-    }
-
-    /**
-     * Returns the act the map is out of.
-     */
-    public final int getAct ( ) {
-        return getIntegerValue ( "Act" );
-    }
-
-    /**
-     * Returns the clearing ability rating.
-     */
-    public final int getClearingAbility ( ) {
-        return getIntegerValue ( "Clearing Ability" );
-    }
-
-    /**
-     * Returns the mob count rating.
-     */
-    public final int getMobCount ( ) {
-        return getIntegerValue ( "Mob Count" );
-    }
-
-    /**
-     * Returns the boss difficulty rating.
-     */
-    public final int getBossDifficulty ( ) {
-        return getIntegerValue ( "Boss Difficulty" );
-    }
-
-    /**
-     *
-     * @return
+     * Returns the name of the currently parsed map.
      */
     public final String getMapName ( ) {
         return mapName;
     }
 
     /**
-     *
-     * @return
+     * Returns the URL of the currently parsed map.
      */
     public final String getMapUrl ( ) {
         return mapUrl;
+    }
+
+    /**
+     * Retrieves the drop level of the map name passed to PoeDBMaps.
+     */
+    public final int getDropLevel ( ) {
+        return DocFinder.getIntegerValue ( soupDoc ,"DropLevel" );
+    }
+
+    /**
+     * Returns the monster level of the map.
+     */
+    public final int getMonsterLevel ( ) {
+        return DocFinder.getIntegerValue ( soupDoc ,"Monster Level" );
+    }
+
+    /**
+     * Returns the act the map is out of.
+     */
+    public final int getAct ( ) {
+        return DocFinder.getIntegerValue ( soupDoc , "Act" );
+    }
+
+    /**
+     * Returns the clearing ability rating.
+     */
+    public final int getClearingAbility ( ) {
+        return DocFinder.getIntegerValue ( soupDoc , "Clearing Ability" );
+    }
+
+    /**
+     * Returns the mob count rating.
+     */
+    public final int getMobCount ( ) {
+        return DocFinder.getIntegerValue ( soupDoc , "Mob Count" );
+    }
+
+    /**
+     * Returns the boss difficulty rating.
+     */
+    public final int getBossDifficulty ( ) {
+        return DocFinder.getIntegerValue ( soupDoc , "Boss Difficulty" );
     }
 
     /**
@@ -194,14 +176,14 @@ public class PoeDBMaps {
      * </p>
      */
     public final String getVaalArea ( ) {
-        return getStringValue ( "Vaal Area" );
+        return DocFinder.getStringValue ( soupDoc , "Vaal Area" );
     }
 
     /**
      * Returns the base type of the map.
      */
     public final String getBaseType ( ) {
-        return getStringValue ( "BaseType" );
+        return DocFinder.getStringValue ( soupDoc , "BaseType" );
 
     }
 
@@ -211,49 +193,49 @@ public class PoeDBMaps {
      * </p>
      */
     public final String getItemClass ( ) {
-        return getStringValue ( "Class" );
+        return DocFinder.getStringValue ( soupDoc ,"Class" );
     }
 
     /**
      * Returns the metadata type of the map.
      */
     public final String getType ( ) {
-        return getStringValue ( "Type" );
+        return DocFinder.getStringValue ( soupDoc , "Type" );
     }
 
     /**
      * Returns the internal icon path.
      */
     public final String getIcon ( ) {
-        return getStringValue ( "Icon" );
+        return DocFinder.getStringValue ( soupDoc , "Icon" );
     }
 
     /**
      * Returns the tile set of the map.
      */
     public final String getTileSet ( ) {
-        return getStringValue ( "Tileset" );
+        return DocFinder.getStringValue ( soupDoc ,"Tileset" );
     }
 
     /**
      * Returns the name of the boss that map boss is based off of.
      */
     public final String getBossBasedOn ( ) {
-        return getStringValue ( "Boss Based On" );
+        return DocFinder.getStringValue ( soupDoc , "Boss Based On" );
     }
 
     /**
      * Returns boss notes.
      */
     public final String getBossNotes ( ) {
-        return getStringValue ( "Boss notes" );
+        return DocFinder.getStringValue ( soupDoc , "Boss notes" );
     }
 
     /**
      * Returns additional notes for the map.
      */
     public final String getAdditionalNotes ( ) {
-        return getStringValue ( "Additional Notes" );
+        return DocFinder.getStringValue ( soupDoc , "Additional Notes" );
     }
 
     /**
@@ -265,99 +247,91 @@ public class PoeDBMaps {
      * </p>
      */
     public final String getReference ( ) {
-        return getHrefValue ( "Reference" );
+        return DocFinder.getHrefValue ( soupDoc ,"Reference" );
     }
 
     /**
      * Returns the obstacles rating.
      */
     public final String getFewObstacles ( ) {
-        return getStringValue ( "Few Obstacles" );
+        return DocFinder.getStringValue ( soupDoc ,"Few Obstacles" );
     }
 
     /**
      * Returns the boss room rating.
      */
     public final String getBossNotInOwnRoom ( ) {
-        return getStringValue ( "Boss not in own room" );
+        return DocFinder.getStringValue ( soupDoc ,"Boss not in own room" );
     }
 
     /**
      * Returns the outdoors rating.
      */
     public final String getOutdoors ( ) {
-        return getStringValue ( "Outdoors" );
+        return DocFinder.getStringValue ( soupDoc , "Outdoors" );
     }
 
     /**
      * Returns the linearity rating.
      */
     public final String getLinear ( ) {
-        return getStringValue ( "Linear" );
+        return DocFinder.getStringValue ( soupDoc , "Linear" );
     }
 
     /**
      * Returns the loading image link, if there is one.
      */
     public final String getLoading ( ) {
-        return getHrefValue ( "Loading" );
+        return DocFinder.getHrefValue ( soupDoc ,"Loading" );
     }
 
     /**
      * Returns the hideout.
      */
     public final String getHideout ( ) {
-        return getStringValue ( "Hideout" );
+        return DocFinder.getStringValue ( soupDoc , "Hideout" );
     }
 
     /**
      * Returns the market link.
      */
     public final String getMarket ( ) {
-        return getHrefValue ( "Market" );
-    }
-
-    /**
-     * @return
-     */
-    public Collection < String > getPantheon ( ) {
-
-        return Collections.emptyList ( );
+        return DocFinder.getHrefValue ( soupDoc ,"Market" );
     }
 
     /**
      * Returns Internal map flags.
      */
     public Collection < String > getFlags ( ) {
-        return Arrays.stream ( getStringValue ( "Flags" ).split ( "," ) ).toList ( );
+        return Arrays.stream ( DocFinder.getStringValue ( soupDoc ,"Flags" ).split ( "," ) ).toList ( );
     }
 
     /**
      * Returns Internal map tags.
      */
     public Collection < String > getTags ( ) {
-        return Arrays.stream ( getStringValue ( "Tags" ).split ( "," ) ).toList ( );
+        return Arrays.stream ( DocFinder.getStringValue ( soupDoc ,"Tags" ).split ( "," ) ).toList ( );
     }
 
     /**
      * Returns additional cards the map can drop.
      */
     public Collection < String > getCardTags ( ) {
-        return Arrays.stream ( getStringValue ( "Card Tags" ).split ( "\n" ) ).toList ( );
+        return Arrays.stream ( DocFinder.getStringValue ( soupDoc ,"Card Tags" ).split ( "\n" ) ).toList ( );
     }
 
     /**
      * Returns the Divination Cards the map can drop.
      */
     public Collection < String > getDivinationCards ( ) {
-        return Arrays.stream ( getStringValue ( "Divination Card" ).split ( "\n" ) ).toList ( );
+        return Arrays.stream ( DocFinder.getStringValue ( soupDoc ,"Divination Card" ).split ( "\n" ) ).toList ( );
     }
 
     /**
      * Returns the bosses of the map.
      */
     public Collection < String > getBosses ( ) {
-        return Arrays.stream ( getStringValue ( "Boss" ).split ( "\n" ) ).toList ( );
+        return Arrays.stream ( DocFinder.getStringValue ( soupDoc ,"Boss" ).split ( "\n" ) ).toList ( );
     }
 
     /**
@@ -371,14 +345,14 @@ public class PoeDBMaps {
      */
     public final Collection < BossStats > getBossesStats ( ) {
         final Collection < BossStats > bossStats = new ArrayList <> ( );
-        Elements tables = doc.select ( "table" );
+        Elements tables = soupDoc.select ( "table" );
 
         for ( Element table : tables ) {
             try {
                 /*
                  * Here we retrieve all <tbody> elements.
                  */
-                Element tbody = table.select ( "tbody" ).get ( 0 );
+                Element tbody = table.selectFirst ( "tbody" );
                 Elements trEles = tbody.select ( "tr" );
 
                 /*
@@ -441,35 +415,35 @@ public class PoeDBMaps {
      * @return
      */
     public String getMods ( ) {
-        return getStringValue ( "Mods" );
+        return DocFinder.getStringValue ( soupDoc ,"Mods" );
     }
 
     /**
      * @return
      */
     public Collection < String > getElderBosses ( ) {
-        return Arrays.stream ( getStringValue ( "Elder Map Boss" ).split ( "\n" ) ).toList ( );
+        return Arrays.stream ( DocFinder.getStringValue ( soupDoc ,"Elder Map Boss" ).split ( "\n" ) ).toList ( );
     }
 
     /**
      * @return
      */
     public Collection < String > getLinkedMaps ( ) {
-        return Arrays.stream ( getStringValue ( "Atlas Linked" ).split ( "\n" ) ).toList ( );
+        return Arrays.stream ( DocFinder.getStringValue ( soupDoc ,"Atlas Linked" ).split ( "\n" ) ).toList ( );
     }
 
     /**
      * @return
      */
     public Collection < String > getUpgradedFrom ( ) {
-        return Arrays.stream ( getStringValue ( "Upgraded From" ).split ( "\n" ) ).toList ( );
+        return Arrays.stream ( DocFinder.getStringValue ( soupDoc ,"Upgraded From" ).split ( "\n" ) ).toList ( );
     }
 
     /**
      * @return
      */
     public Collection < String > getTopologies ( ) {
-        return Arrays.stream ( getStringValue ( "Topologies" ).split ( "\n" ) ).toList ( );
+        return Arrays.stream ( DocFinder.getStringValue ( soupDoc ,"Topologies" ).split ( "\n" ) ).toList ( );
     }
 
     /**
@@ -478,9 +452,9 @@ public class PoeDBMaps {
      * </p>
      */
     private String getHrefValue ( String title ) {
-        if ( doc == null )
+        if ( soupDoc == null )
             return "null";
-        Elements trEles = doc.select ( "tr" );
+        Elements trEles = soupDoc.select ( "tr" );
 
         try {
             for ( Element trElement : trEles ) {
@@ -507,10 +481,10 @@ public class PoeDBMaps {
      *
      */
     private String getStringValue ( String title ) {
-        if ( doc == null )
+        if ( soupDoc == null )
             return "Null";
 
-        Elements trEles = doc.select ( "tr" );
+        Elements trEles = soupDoc.select ( "tr" );
 
         try {
             for ( Element trElement : trEles ) {
@@ -533,10 +507,10 @@ public class PoeDBMaps {
     }
 
     private int getIntegerValue ( String title ) {
-        if ( doc == null)
+        if ( soupDoc == null)
             return -1;
 
-        Elements tdEles = doc.select ( "tr" );
+        Elements tdEles = soupDoc.select ( "tr" );
 
         try {
             for ( Element ele : tdEles ) {

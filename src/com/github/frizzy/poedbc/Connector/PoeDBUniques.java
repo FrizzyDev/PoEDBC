@@ -1,6 +1,6 @@
 package com.github.frizzy.poedbc.Connector;
 
-import com.github.frizzy.poedbc.Utilities.DocUtils;
+import com.github.frizzy.poedbc.Utilities.DocFinder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -99,35 +99,35 @@ public class PoeDBUniques {
      *
      */
     public String getIcon ( ) {
-        return DocUtils.getStringValue ( doc, "Icon" );
+        return DocFinder.getStringValue ( doc, "Icon" );
     }
 
     /**
      *
      */
     public String getBaseType ( ) {
-        return DocUtils.getStringValue ( doc, "BaseType" );
+        return DocFinder.getStringValue ( doc, "BaseType" );
     }
 
     /**
      *
      */
     public String getReference ( ) {
-        return DocUtils.getHrefValue ( doc, "Reference" );
+        return DocFinder.getHrefValue ( doc, "Reference" );
     }
 
     /**
      *
      */
     public Collection < String > getAcronym ( ) {
-        return Arrays.stream( DocUtils.getStringValue ( doc, "Acronym" ).split ( "," ) ).toList ();
+        return Arrays.stream( DocFinder.getStringValue ( doc, "Acronym" ).split ( "," ) ).toList ();
     }
 
     /**
      *
      */
     public String getMarket ( ) {
-        return DocUtils.getHrefValue ( doc, "The Market" );
+        return DocFinder.getHrefValue ( doc, "The Market" );
     }
 
     public String getItemIconLink ( ) {

@@ -1,6 +1,6 @@
 package com.github.frizzy.poedbc.Connector;
 
-import com.github.frizzy.poedbc.Utilities.DocUtils;
+import com.github.frizzy.poedbc.Utilities.DocFinder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -21,28 +21,29 @@ import java.util.logging.Logger;
 public class PoeDBCurrency {
 
     /**
-     *
+     * Logger for PoeDBCurrency.
      */
     private static final Logger log = Logger.getLogger ( PoeDBCurrency.class.getName () );
 
     /**
-     *
+     * The name of the currency data is being retrieved for.
      */
     private String currencyName;
 
     /**
-     *
+     * The poe.db url for the currency item.
      */
     private String currencyUrl;
 
     /**
-     *
+     * The Jsoup document of the parse poe.db page
+     * for the currency item.
      */
-    private Document doc;
+    private Document soupDoc;
 
     /**
-     *
-     * @param currencyName
+     * Creates a PoeDBCurrency instance to parse the poe.db page
+     * for the provided currency item.
      */
     public PoeDBCurrency ( String currencyName ) {
         this.currencyName = currencyName;
@@ -50,7 +51,7 @@ public class PoeDBCurrency {
     }
 
     /**
-     *
+     * Retrieves the URL for the currency item.
      */
     private String buildUrl ( ) {
         return URLResourceHandler.getInstance ( ).getCurrencyLinkFor ( currencyName );
@@ -61,7 +62,7 @@ public class PoeDBCurrency {
      */
     public boolean parse ( ) {
         try {
-            doc = Jsoup.connect ( currencyUrl ).get ();
+            soupDoc = Jsoup.connect ( currencyUrl ).get ();
             return true;
         } catch ( IOException e ) {
             log.log ( Level.SEVERE, e.getMessage (), e );
@@ -81,46 +82,66 @@ public class PoeDBCurrency {
     }
 
     public String getCost ( ) {
-        return DocUtils.getStringValue ( doc, "Cost" );
+        return DocFinder.getStringValue ( soupDoc , "Cost" );
     }
 
     public String getDropLevel ( ) {
-        return DocUtils.getStringValue ( doc, "DropLevel" );
+        return DocFinder.getStringValue ( soupDoc , "DropLevel" );
     }
 
     public String getBaseType ( ) {
-        return DocUtils.getStringValue ( doc, "BaseType" );
+        return DocFinder.getStringValue ( soupDoc , "BaseType" );
     }
 
     public String getItemClass ( ) {
-        return DocUtils.getStringValue ( doc, "Class" );
+        return DocFinder.getStringValue ( soupDoc , "Class" );
     }
 
     public String getType ( ) {
-        return DocUtils.getStringValue ( doc, "Type" );
+        return DocFinder.getStringValue ( soupDoc , "Type" );
     }
 
     public String getSound ( ) {
-        return DocUtils.getStringValue ( doc, "Sound" );
+        return DocFinder.getStringValue ( soupDoc , "Sound" );
     }
 
     public String getIcon ( ) {
-        return DocUtils.getStringValue ( doc, "Icon" );
+        return DocFinder.getStringValue ( soupDoc , "Icon" );
     }
 
     public String getMTXTabStacks ( ) {
-        return DocUtils.getStringValue ( doc, "MTX Tab Stacks" );
+        return DocFinder.getStringValue ( soupDoc , "MTX Tab Stacks" );
     }
 
     public String getReference ( ) {
-        return DocUtils.getHrefValue ( doc, "Reference" );
+        return DocFinder.getHrefValue ( soupDoc , "Reference" );
+    }
+
+    public String getStackSize ( ) {
+        return DocFinder.getProperty ( soupDoc , "Stack Size:" );
+    }
+
+    public String getEssenceTier ( ) {
+        return DocFinder.getProperty ( soupDoc , "Essence Tier:" );
+    }
+
+    public Collection < String > getEssencePrefixes ( ) {
+        return DocFinder.getEssenceModifiers ( soupDoc , "Prefix" );
+    }
+
+    public Collection < String > getEssenceSuffixes ( ) {
+        return DocFinder.getEssenceModifiers ( soupDoc , "Suffix" );
+    }
+
+    public Collection < String > getFossilModifiers ( ) {
+        return DocFinder.getFossilModifiers ( soupDoc );
     }
 
     public Collection < String > getFlags ( ) {
-        return Arrays.stream ( DocUtils.getStringValue ( doc,"Flags" ).split ( "," ) ).toList ( );
+        return Arrays.stream ( DocFinder.getStringValue ( soupDoc ,"Flags" ).split ( "," ) ).toList ( );
     }
 
     public Collection < String > getTags ( ) {
-        return Arrays.stream ( DocUtils.getStringValue ( doc, "Tags" ).split ( "," ) ).toList ( );
+        return Arrays.stream ( DocFinder.getStringValue ( soupDoc , "Tags" ).split ( "," ) ).toList ( );
     }
 }
