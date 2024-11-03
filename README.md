@@ -59,7 +59,7 @@ pdu.parse ( );
 ```
 
 ## Reuse
-PoeDBMaps instances can be reused.
+PoeDBMaps instances can be reused. Additionally, PoeDBCurrency and PoeDBUniques can be reused following the same method.
 ```java
 PoeDBMaps pdm = new PoeDBMaps ( "Gardens" );
 //code here
