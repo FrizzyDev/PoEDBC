@@ -43,6 +43,21 @@ Collection < String > upgradedFromMaps = maps.getUpgradedFrom ( );
 Collection < String > topologies = maps.getTopologies ();
 Collection < BossStats > bossStats = maps.getBossesStats ();
 ```
+## Additional Usage
+You can connect to poe.db and retrieve data for unique and currency items as well. The process is similar to retrieving maps.
+
+```java
+PoeDBCurrency pdc = new PoeDBCurrency ( "Divine Orb" );
+pdc.parse ( );
+String name = pdc.getCurrencyName ( );
+String url = pdc.getCurrencyUrl ( );
+String cost = pdc.getCost ( );
+//and so forth...
+PoeDBUnique pdu = new PoeDBUnique ( "Arborix" );
+pdu.parse ( );
+//Retrieve data here
+```
+
 ## Reuse
 PoeDBMaps instances can be reused.
 ```java
