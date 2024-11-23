@@ -1,5 +1,5 @@
 ## Path of Exile poe.db Connector
-PoEDBC is a connector library to retrieve data from poe.db. By using JSoup, data from web pages on poe.db can be parsed into useable values for an application. Currently, nearly all data that is available for a map on poe.db can be retrieved via the parser.
+PoEDBC is a connector library to retrieve data from poe.db. By using JSoup, data from web pages on poe.db can be parsed into useable values for an application. Currently, nearly all data that is available for a maps, uniques, and currency items on poe.db can be retrieved via the parser.
 
 ## Usage
 
