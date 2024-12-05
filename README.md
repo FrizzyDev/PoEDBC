@@ -1,5 +1,5 @@
 ## Path of Exile poe.db Connector
-PoEDBC is a connector library to retrieve data from poe.db. By using JSoup, data from web pages on poe.db can be parsed into useable values for an application. Currently, nearly all data that is available for a map on poe.db can be retrieved via the parser.
+PoEDBC is a connector library to retrieve data from poe.db. By using JSoup, data from web pages on poe.db can be parsed into useable values for an application. Currently, nearly all data that is available for a maps, uniques, and currency items on poe.db can be retrieved via the parser.
 
 ## Usage
 
@@ -43,8 +43,23 @@ Collection < String > upgradedFromMaps = maps.getUpgradedFrom ( );
 Collection < String > topologies = maps.getTopologies ();
 Collection < BossStats > bossStats = maps.getBossesStats ();
 ```
+## Additional Usage
+You can connect to poe.db and retrieve data for unique and currency items as well. The process is similar to retrieving maps.
+
+```java
+PoeDBCurrency pdc = new PoeDBCurrency ( "Divine Orb" );
+pdc.parse ( );
+String name = pdc.getCurrencyName ( );
+String url = pdc.getCurrencyUrl ( );
+String cost = pdc.getCost ( );
+//and so forth...
+PoeDBUnique pdu = new PoeDBUnique ( "Arborix" );
+pdu.parse ( );
+//Retrieve data here
+```
+
 ## Reuse
-PoeDBMaps instances can be reused.
+PoeDBMaps instances can be reused. Additionally, PoeDBCurrency and PoeDBUniques can be reused following the same method.
 ```java
 PoeDBMaps pdm = new PoeDBMaps ( "Gardens" );
 //code here
