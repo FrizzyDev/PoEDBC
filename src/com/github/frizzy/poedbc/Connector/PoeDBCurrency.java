@@ -81,6 +81,14 @@ public class PoeDBCurrency {
         return parse ( );
     }
 
+    public String getCurrencyName ( ) {
+        return currencyName;
+    }
+
+    public String getCurrencyUrl ( ) {
+        return currencyUrl;
+    }
+
     public String getCost ( ) {
         return DocFinder.getStringValue ( soupDoc , "Cost" );
     }
